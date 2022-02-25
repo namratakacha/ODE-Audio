@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "555758992577",
+    "project_id": "ode-audio-d7aaf",
+    "storage_bucket": "ode-audio-d7aaf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:555758992577:android:551cc2da53fb46dd32a840",
+        "android_client_info": {
+          "package_name": "com.example.music_player"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "555758992577-4mrqp0f2jf2d1q5vs2o0nrbuiamrak18.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.music_player",
+            "certificate_hash": "deb89b0bf0d8d15e9bcb3369e4337575235f172a"
+          }
+        },
+        {
+          "client_id": "555758992577-anhvh7u2ri9oi439nd350mhi56ehr7og.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjqVXQe4PMZaUKg6Ahb5fBtCev6NUIb-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "555758992577-anhvh7u2ri9oi439nd350mhi56ehr7og.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
