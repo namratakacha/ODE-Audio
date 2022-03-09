@@ -1,16 +1,46 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:music_player/screens/bottom_navigation.dart';
 import 'package:music_player/models/dashboard_model.dart';
+import 'package:http/http.dart' as http;
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+
+const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+
+  List<Data>? musicList = [];
+  bool isSelected = false;
+
+    Future getAllGenres() async{
+
+    var url = Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/allgenres');
+    var response = await http.get(url);
+    if(response.statusCode==200){
+      print(response.body);
+
+     final result = AllGenresModel.fromJson(json.decode(response.body));
+      return musicList = result.data;
+
+    }else{
+      print('No data');
+    }
+    }
+
+
+  @override
+  void initState() {
+    getAllGenres();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,14 +72,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10),
-                child: GridView.builder(
+                child:
+                GridView.builder(
                   shrinkWrap: true,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 5,
                       mainAxisSpacing: 20),
-                  itemCount: imageList.length,
-                  itemBuilder: (context, index) => musicOptions(index),
+                  itemCount: musicList?.length,
+                  itemBuilder: (context, index) => musicOptionsList(musicList![index]),
                 ),
               ),
             ),
@@ -115,11 +146,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget musicOptions(int index) {
-    return musicOptionsList(imageList[index]);
-  }
 
-  musicOptionsList(DashBoardModel imageList) {
+  musicOptionsList(Data allData) {
     return Card(
       child: Stack(
         alignment: Alignment.topRight,
@@ -128,14 +156,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onTap: () {
               setState(
                 () {
-                  imageList.isSelected = !imageList.isSelected;
+                  isSelected = !isSelected;
                 },
               );
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.asset(
-                imageList.imageName,
+                allData.profileimageThumbUrl.toString(),
                 fit: BoxFit.fill,
               ),
             ),
@@ -146,12 +174,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               side: MaterialStateBorderSide.resolveWith(
                 (states) => BorderSide(width: 1.5, color: Colors.lightBlue),
               ),
-              value: imageList.isSelected,
+              value: isSelected,
               shape: CircleBorder(),
               onChanged: (value) {
                 setState(
                   () {
-                    imageList.isSelected = !imageList.isSelected;
+                    isSelected = !isSelected;
                   },
                 );
               },

@@ -5,13 +5,17 @@ import 'package:music_player/screens/see_all_recent_songs_screen.dart';
 import 'package:music_player/utils/songs_player.dart';
 
 class LibraryPage extends StatefulWidget {
-  const LibraryPage({Key? key}) : super(key: key);
+    Function? _miniPlayer;
+    LibraryPage(this._miniPlayer);
+   //const LibraryPage({Key? key}) : super(key: key);
 
   @override
   _LibraryPageState createState() => _LibraryPageState();
 }
 
 class _LibraryPageState extends State<LibraryPage> {
+
+  bool _isPlaying = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,13 +123,16 @@ class _LibraryPageState extends State<LibraryPage> {
           children: [
             InkWell(
               onTap: () {
+
                 showModalBottomSheet(
                     isScrollControlled: true,
                     context: context,
-                    builder: (context) => BottomSheetPage(
+                    builder: (context) => SongsPlayer(
                           songImg: item.recentImg,
                           songTitle: item.resentSongTitle,
                         ));
+                // if(_isPlaying = true){
+                //   widget._miniPlayer?.call(SongsPlayer(songTitle: item.resentSongTitle,songImg: item.recentImg,));}
               },
               child: SizedBox(
                 width: 149,
@@ -161,10 +168,11 @@ class _LibraryPageState extends State<LibraryPage> {
         height: 99,
         child: InkWell(
           onTap: () {
+
             showModalBottomSheet(
                 isScrollControlled: true,
                 context: context,
-                builder: (context) => BottomSheetPage(
+                builder: (context) => SongsPlayer(
                       songImg: item.songImg,
                       songTitle: item.songTitle,
                       songSubtitle: item.subtitle,

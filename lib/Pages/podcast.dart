@@ -217,7 +217,7 @@ podcastFeaturedListCard(PodcastModel item, BuildContext context) {
               showModalBottomSheet(
                   isScrollControlled: true,
                   context: context,
-                  builder: (context) => BottomSheetPage(
+                  builder: (context) => SongsPlayer(
                         songImg: item.podcastFeaturedImg,
                         songTitle: item.podcastFeaturedTitle,
                         songSubtitle: item.podcastFeaturedSubtitle,
@@ -275,7 +275,7 @@ podcastTrendingListCard(PodcastModel item, BuildContext context) {
               showModalBottomSheet(
                   isScrollControlled: true,
                   context: context,
-                  builder: (context) => BottomSheetPage(
+                  builder: (context) => SongsPlayer(
                         songImg: item.podcastTrendingImg,
                         songTitle: item.podcastTrendingTitle,
                         songSubtitle: item.podcastTrendingSubtitle,

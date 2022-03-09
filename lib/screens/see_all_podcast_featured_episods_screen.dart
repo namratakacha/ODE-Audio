@@ -85,7 +85,7 @@ class _AllPodcastFeaturedEpisodsState extends State<AllPodcastFeaturedEpisods> {
             showModalBottomSheet(
                 isScrollControlled: true,
                 context: context,
-                builder: (context) => BottomSheetPage(
+                builder: (context) => SongsPlayer(
                   songImg: item.podcastFeaturedImg,
                   songTitle: item.podcastFeaturedTitle,
                   songSubtitle: item.podcastFeaturedSubtitle,

@@ -75,7 +75,7 @@ class MySearchDelegate extends SearchDelegate {
             showModalBottomSheet(
                 isScrollControlled: true,
                 context: context,
-                builder: (context) => BottomSheetPage(
+                builder: (context) => SongsPlayer(
                       songImg: item.songImg,
                       songTitle: item.songTitle,
                       songSubtitle: item.songSubtitle,

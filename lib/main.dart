@@ -9,6 +9,8 @@ Future main() async {
   await Firebase.initializeApp();
 
   runApp(MyApp());
+  final _navigatorKey = GlobalKey();
+
 }
 
 class MyApp extends StatelessWidget {
@@ -23,7 +25,9 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
-          home: Splash()),
+          home: Splash(),
+
+      ),
 
     );
   }

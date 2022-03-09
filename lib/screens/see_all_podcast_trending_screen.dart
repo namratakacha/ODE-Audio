@@ -85,7 +85,7 @@ class _SeeAllPodcastTrendingState extends State<SeeAllPodcastTrending> {
             showModalBottomSheet(
                 isScrollControlled: true,
                 context: context,
-                builder: (context) => BottomSheetPage(
+                builder: (context) => SongsPlayer(
                       songImg: item.podcastTrendingImg,
                       songTitle: item.podcastTrendingTitle,
                       songSubtitle: item.podcastTrendingSubtitle,

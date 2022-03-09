@@ -30,8 +30,7 @@ class _SeeAllSongsState extends State<SeeAllSongs> {
         elevation: 2,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context,
-                MaterialPageRoute(builder: (context) => LibraryPage()));
+            Navigator.pop(context);
           },
           icon: Padding(
             padding: const EdgeInsets.only(left: 11),
@@ -85,7 +84,7 @@ class _SeeAllSongsState extends State<SeeAllSongs> {
             showModalBottomSheet(
                 isScrollControlled: true,
                 context: context,
-                builder: (context) => BottomSheetPage(
+                builder: (context) => SongsPlayer(
                       songImg: item.recentImg,
                       songTitle: item.resentSongTitle,
 

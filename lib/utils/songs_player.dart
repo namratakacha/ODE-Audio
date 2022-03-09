@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:music_player/models/library_model.dart';
 
 
 
 
-class BottomSheetPage extends StatefulWidget {
+class SongsPlayer extends StatefulWidget {
   String? songTitle;
   String? songImg;
   String? songSubtitle;
+  Function? miniPlayer2;
 
-  BottomSheetPage({Key? key, this.songTitle, this.songImg, this.songSubtitle})
+  SongsPlayer({Key? key, this.songTitle, this.songImg, this.songSubtitle, this.miniPlayer2})
       : super(key: key);
 
   @override
-  _BottomSheetPageState createState() => _BottomSheetPageState();
+  _SongsPlayerState createState() => _SongsPlayerState();
 }
 
-class _BottomSheetPageState extends State<BottomSheetPage> {
+class _SongsPlayerState extends State<SongsPlayer> {
   bool _isPaused = false;
   bool _isPlaying = false;
   bool isMuted = false;
@@ -97,6 +99,9 @@ class _BottomSheetPageState extends State<BottomSheetPage> {
                 children: [
                   IconButton(
                     onPressed: () {
+                      if(_isPlaying=true){
+                        widget.miniPlayer2;
+                      }
                       audio.stop();
                       Navigator.pop(context);
                     },
@@ -167,7 +172,7 @@ class _BottomSheetPageState extends State<BottomSheetPage> {
                         decoration: BoxDecoration(
                           image: DecorationImage(
                               image: AssetImage(widget.songImg ??
-                                  'assets/images/temp/library_recent_one.jpg'),
+                                  ''),
                               fit: BoxFit.fill),
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
