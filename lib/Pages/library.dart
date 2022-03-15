@@ -1,8 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:music_player/models/library_model.dart';
+import 'package:music_player/models/recently_played_model.dart';
+
 import 'package:music_player/screens/search_screen.dart';
 import 'package:music_player/screens/see_all_recent_songs_screen.dart';
 import 'package:music_player/utils/songs_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+
+
+
 
 class LibraryPage extends StatefulWidget {
     Function? _miniPlayer;
@@ -16,6 +26,128 @@ class LibraryPage extends StatefulWidget {
 class _LibraryPageState extends State<LibraryPage> {
 
   bool _isPlaying = false;
+  List<AllSongs>? songsList = [];
+  List<RecentlyPlayedSongs>? recentSongs = [];
+  var songId;
+  int currentPage = 1;
+  final RefreshController refreshController = RefreshController(initialRefresh: false);
+
+
+  Future getAllSongs() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+        'https://php71.indianic.com/odemusicapp/public/api/v1/user/songs',
+    );
+    final page = jsonEncode({
+      "limit": 10,
+      "page": currentPage,
+    });
+    final response = await http.post(url,
+        body: page,
+        headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+    if (response.statusCode == 200) {
+      print(response.body);
+
+      List<AllSongs>? result =
+          AllSongsModel.fromJson(json.decode(response.body)).data?.allSongs;
+      songsList?.addAll(result ?? []);
+      currentPage++;
+      setState(() {});
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
+
+  Future addResentSongs() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+        'https://php71.indianic.com/odemusicapp/public/api/v1/addrecentlyplayedsong');
+    final page = jsonEncode({
+      "id": songId,
+
+    });
+    final response = await http.post(url,
+        body: page,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
+    if (response.statusCode == 200) {
+      print(response.body);
+      print('song added succesfullly');
+      songId = songId;
+      setState(() {});
+    } else {
+      songId = songId;
+      print(response.statusCode);
+      print('song not added');
+    }
+  }
+
+  Future getRecentlyPlayedSongs() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+      'https://php71.indianic.com/odemusicapp/public/api/v1/getallrecentlyplayedsong',
+    );
+    final page = jsonEncode({
+      "limit": 10,
+      "page": 1,
+    });
+    final response = await http.post(url,
+        body: page,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
+    if (response.statusCode == 200) {
+      print(response.body);
+      recentSongs?.clear();
+      List<RecentlyPlayedSongs>? result =
+          RecentlyPlayedModel.fromJson(json.decode(response.body)).data?.recentlyPlayedSongs;
+      recentSongs?.clear();
+      recentSongs?.addAll(result ?? []);
+    
+
+      setState(() {});
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
+
+
+
+
+  reloadData() async {
+   // recentSongs?.clear();
+    getRecentlyPlayedSongs();
+    //recentSongs?.removeAt(0);
+    }
+
+
+  @override
+  void initState() {
+    getAllSongs();
+    getRecentlyPlayedSongs();
+
+    //getResentSongs();
+    super.initState();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,10 +198,11 @@ class _LibraryPageState extends State<LibraryPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
+                      getRecentlyPlayedSongs().then((value) => addResentSongs()).then((value) => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => SeeAllSongs()));
+                              builder: (context) => SeeAllSongs())));
+
                     },
                     child: Text(
                       'See All',
@@ -83,12 +216,12 @@ class _LibraryPageState extends State<LibraryPage> {
               ),
             ),
             Container(
-              height: 185,
+              height: 210,
               child: ListView.builder(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) => recentSongCard(items[index]),
-                  itemCount: items.length),
+                  itemBuilder: (context, index) => recentSongCard(recentSongs![index]),
+                  itemCount: recentSongs?.length),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 15, bottom: 15, left: 15),
@@ -102,10 +235,25 @@ class _LibraryPageState extends State<LibraryPage> {
             ),
             Expanded(
               child: Container(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) => allSongsCard(items[index]),
-                  itemCount: items.length,
+                child: SmartRefresher(
+                  controller: refreshController,
+                  enablePullUp: true,
+                  enablePullDown: false,
+
+                  onLoading: () async{
+                    final data = getAllSongs();
+                    if(data==true){
+                      refreshController.loadComplete();
+                    }
+                    else{
+                      refreshController.loadFailed();
+                    }
+                  },
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) => allSongsCard(songsList![index]),
+                    itemCount: songsList?.length,
+                  ),
                 ),
               ),
             ),
@@ -115,8 +263,9 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  recentSongCard(LibraryModel item) {
+  recentSongCard(RecentlyPlayedSongs item) {
     return Container(
+
       child: Padding(
         padding: const EdgeInsets.only(left: 15, bottom: 9),
         child: Column(
@@ -128,18 +277,18 @@ class _LibraryPageState extends State<LibraryPage> {
                     isScrollControlled: true,
                     context: context,
                     builder: (context) => SongsPlayer(
-                          songImg: item.recentImg,
-                          songTitle: item.resentSongTitle,
+                          songImg: item.image800,
+                          songTitle: item.songName,
                         ));
                 // if(_isPlaying = true){
                 //   widget._miniPlayer?.call(SongsPlayer(songTitle: item.resentSongTitle,songImg: item.recentImg,));}
               },
               child: SizedBox(
-                width: 149,
+                width: 150,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(9),
-                  child: Image.asset(
-                    item.recentImg,
+                  child: Image.network(
+                    item.image150.toString(),
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -150,7 +299,8 @@ class _LibraryPageState extends State<LibraryPage> {
               width: 149,
               child: Align(
                 alignment: Alignment.topLeft,
-                child: Text(item.resentSongTitle,
+                child: Text(item.songName.toString(),
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.start),
               ),
@@ -161,22 +311,23 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  allSongsCard(LibraryModel item) {
+  allSongsCard(AllSongs item) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15, 1, 15, 15),
       child: Container(
         height: 99,
         child: InkWell(
           onTap: () {
-
-            showModalBottomSheet(
+            songId = item.id;
+            addResentSongs().then((value) => showModalBottomSheet(
                 isScrollControlled: true,
                 context: context,
                 builder: (context) => SongsPlayer(
-                      songImg: item.songImg,
-                      songTitle: item.songTitle,
-                      songSubtitle: item.subtitle,
-                    ));
+                  songImg: item.image800.toString(),
+                  songTitle: item.songName,
+                  songSubtitle: item.artistName,
+                ),),).then((val) => val == true ? reloadData() : null);
+
           },
           child: Card(
             color: Colors.white,
@@ -193,37 +344,40 @@ class _LibraryPageState extends State<LibraryPage> {
                     width: 79,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(5),
-                      child: Image.asset(
-                        item.songImg,
+                      child: Image.network(
+                        item.image150.toString(),
                         fit: BoxFit.fill,
                       ),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          item.songTitle,
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 3),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            item.songName.toString(),
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          item.subtitle,
-                          textAlign: TextAlign.left,
-                          style: TextStyle(fontSize: 16),
+                        SizedBox(height: 5),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            item.artistName.toString(),
+                            textAlign: TextAlign.left,
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 )
               ],

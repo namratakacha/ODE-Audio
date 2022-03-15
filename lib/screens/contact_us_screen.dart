@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:music_player/Pages/account.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ContactUs extends StatefulWidget {
   const ContactUs({Key? key}) : super(key: key);
@@ -13,6 +17,38 @@ class _ContactUsState extends State<ContactUs> {
   TextEditingController msgController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+
+  Future<void> contactUs() async{
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    final page = jsonEncode({
+      "name": nameController.text,
+      "email": emailController.text,
+      "message": msgController.text,
+    });
+
+    if(nameController.text.isNotEmpty && emailController.text.isNotEmpty && msgController.text.isNotEmpty){
+      var response = await http.post(Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/contactus'),
+          body: page,
+          headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          }
+      );
+      if(response.statusCode==200){
+        print(response.statusCode);
+        Navigator.pop(context, MaterialPageRoute(builder: (context)=>MyAccountPage()));
+      } else{
+        print(response.statusCode);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
+      }
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Blank field not allowed')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +118,7 @@ class _ContactUsState extends State<ContactUs> {
                 TextFormField(
                   controller: emailController,
                   textInputAction: TextInputAction.next,
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value!.isEmpty) {
                       return 'Please enter email';
@@ -95,7 +132,7 @@ class _ContactUsState extends State<ContactUs> {
                   child: Text('Your Message'),
                 ),
                 TextFormField(
-                  controller: emailController,
+                  controller: msgController,
                   textInputAction: TextInputAction.done,
                   maxLines: 5,
                   validator: (value) {
@@ -116,7 +153,9 @@ class _ContactUsState extends State<ContactUs> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5))),
                         onPressed: () {
-                          if (_formKey.currentState!.validate()) {}
+                          if (_formKey.currentState!.validate()) {
+                            contactUs();
+                          }
                         },
                         child: Text(
                           'Send',

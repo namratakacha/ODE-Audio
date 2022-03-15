@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:music_player/Pages/radio.dart';
 import 'package:music_player/models/radio_model.dart';
 import 'package:music_player/screens/search_screen.dart';
 import 'package:music_player/utils/radio_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class SeeAllRadio extends StatefulWidget {
   const SeeAllRadio({Key? key}) : super(key: key);
@@ -12,6 +16,48 @@ class SeeAllRadio extends StatefulWidget {
 }
 
 class _SeeAllRadioState extends State<SeeAllRadio> {
+
+  List<RadioList>? radioList = [];
+
+
+
+  Future getRadioList() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+      'https://php71.indianic.com/odemusicapp/public/api/v1/allradio',
+    );
+    final page = jsonEncode({
+      "limit": 10,
+      "page": 1,
+    });
+    final response = await http.post(url,
+        body: page,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
+    if (response.statusCode == 200) {
+      print(response.body);
+
+      List<RadioList>? result =
+          RadioModel.fromJson(json.decode(response.body)).data?.radio;
+      radioList?.addAll(result ?? []);
+      setState(() {});
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
+
+  @override
+  void initState() {
+    getRadioList();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,12 +115,12 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
           padding: const EdgeInsets.only(top: 20),
           child: ListView.builder(
             shrinkWrap: true,
-            itemBuilder: (context, index) => allSongsCard(items[index]),
-            itemCount: items.length,
+            itemBuilder: (context, index) => allSongsCard(radioList![index]),
+            itemCount: radioList?.length,
           ),),),
     );
   }
-  allSongsCard(RadioModel item) {
+  allSongsCard(RadioList item) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15, 1, 15, 15),
       child: Container(
@@ -85,8 +131,8 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
                 isScrollControlled: true,
                 context: context,
                 builder: (context) => RadioBottomSheet(
-                  radioImg: item.radioImg,
-                  radioTitle: item.radioTitle,
+                  radioImg: item.profileimageUrl,
+                  radioTitle: item.name,
                 ));
           },
           child: Card(
@@ -104,8 +150,8 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
                     width: 79,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(5),
-                      child: Image.asset(
-                        item.radioImg,
+                      child: Image.network(
+                        item.profileimageThumbUrl.toString(),
                         fit: BoxFit.fill,
                       ),
                     ),
@@ -120,18 +166,18 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          item.radioTitle,
+                          item.name.toString(),
                           textAlign: TextAlign.left,
                           style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
+                              fontSize: 19, fontWeight: FontWeight.bold),
                         ),
                       ),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          item.radioSubtitle,
+                          item.shortDescription.toString(),
                           textAlign: TextAlign.left,
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
                         ),
                       ),
                     ],

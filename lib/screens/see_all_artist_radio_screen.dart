@@ -74,7 +74,7 @@ class _SeeAllArtistRadioState extends State<SeeAllArtistRadio> {
           ),),),
     );
   }
-  allSongsCard(RadioModel item) {
+  allSongsCard(RadioModel1 item) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15, 1, 15, 15),
       child: Container(

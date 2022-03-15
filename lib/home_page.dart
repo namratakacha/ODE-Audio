@@ -20,11 +20,11 @@ class HomePage extends StatelessWidget {
             print('loading...');
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData) {
-            return DashboardScreen();
+            return LoginScreen();
           } else if (snapshot.hasError) {
             return Center(child: Text('Something went wrong'));
           } else {
-            return LoginScreen();
+            return DashboardScreen();
           }
         },
       ),

@@ -1,15 +1,12 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/services.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:music_player/screens/dashboard_screen.dart';
-import 'package:music_player/screens/otp_screen.dart';
 import 'package:music_player/utils/screen_size.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/login_model.dart';
 
 class PhoneNumberScreen extends StatefulWidget {
@@ -42,6 +39,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         String? token = "";
         token = LoginModel.fromJson(json.decode(response.body)).data?.token.toString();
         print("My token is - $token");
+        setToken(token.toString());
         Navigator.push(context, MaterialPageRoute(builder: (context)=>DashboardScreen()));
       } else{
         print(phoneController.text);
@@ -52,6 +50,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Blank field not allowed')));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -150,13 +149,12 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                                   primary: Colors.lightBlue,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5))),
-                              onPressed: () {
+                              onPressed: () async{
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                prefs.setBool('phoneLoggedIn', true);
                                 if (_formKey.currentState!.validate()) {
                                   login();
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //         builder: (context) => DashboardScreen()));
+                                  print('phone login');
                                 }
                               },
                               // ignore: prefer_const_constructors
@@ -176,5 +174,9 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         ),
       ),
     );
+  }
+  Future<void> setToken(String token) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString("token", token);
   }
 }

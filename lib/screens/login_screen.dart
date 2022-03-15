@@ -1,14 +1,53 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player/screens/bottom_navigation.dart';
-import 'package:music_player/screens/phone_verification_screen.dart';
+import 'package:music_player/models/social_login_model.dart';
+import 'package:music_player/screens/dashboard_screen.dart';
+import 'package:music_player/screens/phone_number_screen.dart';
 import 'package:music_player/utils/google_sign_in.dart';
 import 'package:music_player/utils/screen_size.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+
+class LoginScreen extends StatefulWidget {
+   LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  var googleId;
+  var email;
+
+  Future<void> socialLogin() async{
+    final user = FirebaseAuth.instance.currentUser;
+
+      var response = await http.post(Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/user/sociallogin'),
+          body: ({
+            "google_id": user?.uid,
+            "email": user?.email,
+          })
+      );
+      if(response.statusCode==200){
+        String? token = "";
+        token = SocialLogin.fromJson(json.decode(response.body)).data?.token.toString();
+        print("My token is - $token");
+        print('API call success');
+        print(user?.uid);
+        print(user?.email);
+        setToken(token.toString());
+       Navigator.push(context, MaterialPageRoute(builder: (context)=>DashboardScreen()));
+      } else{
+        print(googleId);
+        print(email);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
+      }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +76,7 @@ class LoginScreen extends StatelessWidget {
                     child: button(
                       color: Colors.lightBlue,
                       title: 'Phone Number',
-                      onpressed: () {
+                      onpressed: (){
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -86,18 +125,12 @@ class LoginScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 20),
                     child: button(
                         onpressed: () async {
-                          print('googlelogin');
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          prefs.setBool('googleLoggedIn', true);
                           final provider = Provider.of<GoogleSignInProvider>(
                               context,
                               listen: false);
                           provider.googleLogin().then((value) =>
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => LibraryScreen())));
+                          socialLogin());
+                          print('googlelogin');
                         },
                         color: Colors.blue[400],
                         title: 'Sign In With google'),
@@ -109,6 +142,10 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+  Future<void> setToken(String token) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString("token", token);
   }
 }
 
@@ -145,3 +182,4 @@ class button extends StatelessWidget {
     );
   }
 }
+

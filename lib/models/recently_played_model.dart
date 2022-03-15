@@ -1,50 +1,13 @@
-// class SearchSongModel {
-//   String songImg;
-//   String songTitle;
-//   String songSubtitle;
-//
-//   SearchSongModel(this.songImg, this.songTitle, this.songSubtitle);
-// }
-//
-// List<SearchSongModel> songs = [
-//   SearchSongModel(
-//     'assets/images/temp/search_song_one.jpg',
-//     'Bruno Mars',
-//     'Artist',
-//   ),
-//   SearchSongModel(
-//     'assets/images/temp/search_song_two.jpg',
-//     'Believer',
-//     'Imagine Dragons',
-//   ),
-//   SearchSongModel(
-//     'assets/images/temp/search_song_three.jpg',
-//     'Closer',
-//     'The Chainsmokers',
-//   ),
-//   SearchSongModel(
-//     'assets/images/temp/library_songs_one.jpg',
-//     'Old Town Road',
-//     'Lli Nas X 2019',
-//   ),
-//   SearchSongModel(
-//     'assets/images/temp/library_songs_two.jpg',
-//     'Dont Start Now',
-//     'Dua Lia 2019',
-//   ),
-// ];
-
-
-class SearchSongModel {
+class RecentlyPlayedModel {
   final Settings? settings;
   final Data? data;
 
-  SearchSongModel({
+  RecentlyPlayedModel({
     this.settings,
     this.data,
   });
 
-  SearchSongModel.fromJson(Map<String, dynamic> json)
+  RecentlyPlayedModel.fromJson(Map<String, dynamic> json)
       : settings = (json['settings'] as Map<String,dynamic>?) != null ? Settings.fromJson(json['settings'] as Map<String,dynamic>) : null,
         data = (json['data'] as Map<String,dynamic>?) != null ? Data.fromJson(json['data'] as Map<String,dynamic>) : null;
 
@@ -78,25 +41,33 @@ class Settings {
 }
 
 class Data {
-  final List<Songs>? songs;
-  final List<dynamic>? recentlySerchSongs;
+  final List<RecentlyPlayedSongs>? recentlyPlayedSongs;
+  final int? nextPage;
+  final int? currentPage;
+  final int? total;
 
   Data({
-    this.songs,
-    this.recentlySerchSongs,
+    this.recentlyPlayedSongs,
+    this.nextPage,
+    this.currentPage,
+    this.total,
   });
 
   Data.fromJson(Map<String, dynamic> json)
-      : songs = (json['songs'] as List?)?.map((dynamic e) => Songs.fromJson(e as Map<String,dynamic>)).toList(),
-        recentlySerchSongs = json['recently_serch_songs'] as List?;
+      : recentlyPlayedSongs = (json['recently_played_songs'] as List?)?.map((dynamic e) => RecentlyPlayedSongs.fromJson(e as Map<String,dynamic>)).toList(),
+        nextPage = json['next_page'] as int?,
+        currentPage = json['current_page'] as int?,
+        total = json['total'] as int?;
 
   Map<String, dynamic> toJson() => {
-    'songs' : songs?.map((e) => e.toJson()).toList(),
-    'recently_serch_songs' : recentlySerchSongs
+    'recently_played_songs' : recentlyPlayedSongs?.map((e) => e.toJson()).toList(),
+    'next_page' : nextPage,
+    'current_page' : currentPage,
+    'total' : total
   };
 }
 
-class Songs {
+class RecentlyPlayedSongs {
   final int? id;
   final String? songId;
   final String? songName;
@@ -110,8 +81,9 @@ class Songs {
   final String? image800;
   final String? createdAt;
   final String? updatedAt;
+  final String? genreName;
 
-  Songs({
+  RecentlyPlayedSongs({
     this.id,
     this.songId,
     this.songName,
@@ -125,9 +97,10 @@ class Songs {
     this.image800,
     this.createdAt,
     this.updatedAt,
+    this.genreName,
   });
 
-  Songs.fromJson(Map<String, dynamic> json)
+  RecentlyPlayedSongs.fromJson(Map<String, dynamic> json)
       : id = json['id'] as int?,
         songId = json['song_id'] as String?,
         songName = json['song_name'] as String?,
@@ -140,7 +113,8 @@ class Songs {
         image150 = json['image_150'] as String?,
         image800 = json['image_800'] as String?,
         createdAt = json['created_at'] as String?,
-        updatedAt = json['updated_at'] as String?;
+        updatedAt = json['updated_at'] as String?,
+        genreName = json['genre_name'] as String?;
 
   Map<String, dynamic> toJson() => {
     'id' : id,
@@ -155,6 +129,7 @@ class Songs {
     'image_150' : image150,
     'image_800' : image800,
     'created_at' : createdAt,
-    'updated_at' : updatedAt
+    'updated_at' : updatedAt,
+    'genre_name' : genreName
   };
 }

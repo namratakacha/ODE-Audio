@@ -98,7 +98,7 @@ class _RadioBottomSheetState extends State<RadioBottomSheet> {
                         width: 330,
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                              image: AssetImage(widget.radioImg ??
+                              image: NetworkImage(widget.radioImg ??
                                   'assets/images/temp/library_recent_one.jpg'),
                               fit: BoxFit.fill),
                           borderRadius: BorderRadius.circular(10),

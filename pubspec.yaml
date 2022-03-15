@@ -59,7 +59,8 @@ dev_dependencies:
   flutter_rating_bar: ^4.0.0
   launch_review: ^3.0.1
   miniplayer: ^1.0.1
-  http: ^0.13.4
+  http: any
+  pull_to_refresh: ^2.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

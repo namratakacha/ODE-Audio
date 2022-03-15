@@ -1,4 +1,4 @@
-import 'dart:io';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,7 +10,8 @@ import 'package:music_player/screens/rating_screen.dart';
 import 'package:music_player/utils/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+
 
 class MyAccountPage extends StatefulWidget {
   String? name;
@@ -27,6 +28,34 @@ class MyAccountPage extends StatefulWidget {
 
 class _MyAccountPageState extends State<MyAccountPage> {
   bool isSwitched = false;
+
+  Future<void> logout() async{
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+      var response = await http.post(Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/user/logout'),
+
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          }
+      );
+      if(response.statusCode==200){
+        print(response.statusCode);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) => LoginScreen()),
+                (route) => false);
+      } else{
+        print(response.statusCode);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
+      }
+
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +95,6 @@ class _MyAccountPageState extends State<MyAccountPage> {
                           onPressed: () async {
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
-
                             if (prefs.containsKey('phoneLoggedIn')) {
                               print('phone logout');
                               await prefs.clear().then((value) =>
@@ -74,10 +102,9 @@ class _MyAccountPageState extends State<MyAccountPage> {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => LoginScreen()),
-                                      (route) => false));
+                                          (route) => false));
 
                             } else {
-                              print('google logout');
                               final provider =
                                   Provider.of<GoogleSignInProvider>(context,
                                       listen: false);
@@ -88,6 +115,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                                       MaterialPageRoute(
                                           builder: (context) => LoginScreen()),
                                       (route) => false)));
+                              print('google logout');
                             }
                           },
                           child: Text('Yes'))

@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:music_player/screens/bottom_navigation.dart';
+
+import 'package:music_player/screens/dashboard_screen.dart';
 import 'package:music_player/walkthrough_page.dart';
 import 'package:music_player/utils/screen_size.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,20 +23,32 @@ class _SplashState extends State<Splash> {
   }
 
   checkLogin() async {
-    Future.delayed(const Duration(seconds: 5));
+    Future.delayed(const Duration(seconds: 10));
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString("token") ?? "";
     bool? phoneLoggedIn = prefs.getBool('phoneLoggedIn');
-    bool? googleLoggedIn = prefs.getBool('googleLoggedIn');
+
+
+
     if (phoneLoggedIn ?? false) {
-      print('mobile');
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => LibraryScreen()));
-    } else if (googleLoggedIn ?? false) {
-      print('google');
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => LibraryScreen()));
+
+      if(!token.isEmpty){
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => DashboardScreen()));
+        print('mobile');
+      }else {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => walkThroughScreen()));
+      }
+
+    } else if (!token.isEmpty) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => DashboardScreen()));
+        print('google');
+
     } else {
-      print('nothing');
+      print('no login');
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => walkThroughScreen()));
     }

@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:music_player/Pages/podcast.dart';
 import 'package:music_player/models/podcast_model.dart';
 import 'package:music_player/screens/search_screen.dart';
 import 'package:music_player/utils/songs_player.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SeeAllPodcastTrending extends StatefulWidget {
   const SeeAllPodcastTrending({Key? key}) : super(key: key);
@@ -12,6 +16,39 @@ class SeeAllPodcastTrending extends StatefulWidget {
 }
 
 class _SeeAllPodcastTrendingState extends State<SeeAllPodcastTrending> {
+
+  final List<TrandingPodcasts>? trandingPodcasts = [];
+
+  Future getAllPodcast() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+        'https://php71.indianic.com/odemusicapp/public/api/v1/podcast');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+    if (response.statusCode == 200) {
+      print(response.body);
+
+      List<TrandingPodcasts>? resultTrending =
+          PodcastModel.fromJson(json.decode(response.body)).data?.trandingPodcasts;
+      trandingPodcasts?.addAll(resultTrending ?? []);
+
+      setState(() {});
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
+
+  @override
+  void initState() {
+  getAllPodcast();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,15 +104,15 @@ class _SeeAllPodcastTrendingState extends State<SeeAllPodcastTrending> {
           padding: const EdgeInsets.only(top: 20),
           child: ListView.builder(
             shrinkWrap: true,
-            itemBuilder: (context, index) => allSongsCard(items[index]),
-            itemCount: items.length,
+            itemBuilder: (context, index) => allTrendingPodcastCard(trandingPodcasts![index]),
+            itemCount: trandingPodcasts?.length,
           ),
         ),
       ),
     );
   }
 
-  allSongsCard(PodcastModel item) {
+  allTrendingPodcastCard(TrandingPodcasts item) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15, 1, 15, 15),
       child: Container(
@@ -86,9 +123,9 @@ class _SeeAllPodcastTrendingState extends State<SeeAllPodcastTrending> {
                 isScrollControlled: true,
                 context: context,
                 builder: (context) => SongsPlayer(
-                      songImg: item.podcastTrendingImg,
-                      songTitle: item.podcastTrendingTitle,
-                      songSubtitle: item.podcastTrendingSubtitle,
+                      songImg: item.profileimageUrl,
+                      songTitle: item.name,
+                      songSubtitle: item.shortDescription,
                     ));
           },
           child: Card(
@@ -106,8 +143,8 @@ class _SeeAllPodcastTrendingState extends State<SeeAllPodcastTrending> {
                     width: 79,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(5),
-                      child: Image.asset(
-                        item.podcastTrendingImg,
+                      child: Image.network(
+                        item.profileimageThumbUrl.toString(),
                         fit: BoxFit.fill,
                       ),
                     ),
@@ -122,18 +159,18 @@ class _SeeAllPodcastTrendingState extends State<SeeAllPodcastTrending> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          item.podcastTrendingTitle,
+                          item.name.toString(),
                           textAlign: TextAlign.left,
                           style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          item.podcastTrendingSubtitle,
+                          item.shortDescription.toString(),
                           textAlign: TextAlign.left,
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
                         ),
                       ),
                     ],

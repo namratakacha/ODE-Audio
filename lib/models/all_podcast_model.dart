@@ -1,53 +1,15 @@
-class RadioModel1 {
-  String radioImg;
-  String radioTitle;
-  String radioSubtitle;
-  String artistImg;
-  String artistTitle;
-
-  RadioModel1(this.radioImg, this.radioTitle, this.radioSubtitle, this.artistImg,
-      this.artistTitle);
-}
-
-List<RadioModel1> items = [
-  RadioModel1(
-      'assets/images/temp/radio_fm_one.PNG',
-      'KJLH 102.3FM',
-      'Serving the Los Angles Urben',
-      'assets/images/temp/radio_artist_one.PNG',
-      'Drake'),
-  RadioModel1(
-      'assets/images/temp/radio_fm_two.PNG',
-      'WHUR 96.3',
-      'The best of DC Radio',
-      'assets/images/temp/radio_artist_two.PNG',
-      'Travis Scott'),
-  RadioModel1(
-      'assets/images/temp/radio_fm_one.PNG',
-      'KJLH 102.3FM',
-      'Serving the Los Angles Urben',
-      'assets/images/temp/radio_artist_one.PNG',
-      'Drake'),
-  RadioModel1(
-      'assets/images/temp/radio_fm_two.PNG',
-      'WHUR 96.3',
-      'The best of DC Radio',
-      'assets/images/temp/radio_artist_two.PNG',
-      'Travis Scott'),
-];
-
-class RadioModel {
+class AllPodcastModel {
   final Settings? settings;
   final Data? data;
 
-  RadioModel({
+  AllPodcastModel({
     this.settings,
     this.data,
   });
 
-  RadioModel.fromJson(Map<String, dynamic>? json)
-      : settings = (json?['settings'] as Map<String,dynamic>?) != null ? Settings.fromJson(json?['settings'] as Map<String,dynamic>) : null,
-        data = (json?['data'] as Map<String,dynamic>?) != null ? Data.fromJson(json?['data'] as Map<String,dynamic>) : null;
+  AllPodcastModel.fromJson(Map<String, dynamic> json)
+      : settings = (json['settings'] as Map<String,dynamic>?) != null ? Settings.fromJson(json['settings'] as Map<String,dynamic>) : null,
+        data = (json['data'] as Map<String,dynamic>?) != null ? Data.fromJson(json['data'] as Map<String,dynamic>) : null;
 
   Map<String, dynamic> toJson() => {
     'settings' : settings?.toJson(),
@@ -79,82 +41,98 @@ class Settings {
 }
 
 class Data {
-  final List<RadioList>? radio;
+  final List<Podcasts>? podcasts;
   final int? nextPage;
   final int? currentPage;
   final int? total;
 
   Data({
-    this.radio,
+    this.podcasts,
     this.nextPage,
     this.currentPage,
     this.total,
   });
 
   Data.fromJson(Map<String, dynamic> json)
-      : radio = (json['radio'] as List?)?.map((dynamic e) => RadioList.fromJson(e as Map<String,dynamic>)).toList(),
+      : podcasts = (json['podcasts'] as List?)?.map((dynamic e) => Podcasts.fromJson(e as Map<String,dynamic>)).toList(),
         nextPage = json['next_page'] as int?,
         currentPage = json['current_page'] as int?,
         total = json['total'] as int?;
 
   Map<String, dynamic> toJson() => {
-    'radio' : radio?.map((e) => e.toJson()).toList(),
+    'podcasts' : podcasts?.map((e) => e.toJson()).toList(),
     'next_page' : nextPage,
     'current_page' : currentPage,
     'total' : total
   };
 }
 
-class RadioList {
+class Podcasts {
   final int? id;
   final String? name;
+  final int? generId;
   final String? shortDescription;
   final String? profileImage;
-  final String? link;
+  final String? audio;
+  final int? isTranding;
   final int? isFeatured;
   final String? createdAt;
   final String? updatedAt;
   final dynamic deletedAt;
+  final String? genreName;
+  final String? audioUrl;
   final String? profileimageUrl;
   final String? profileimageThumbUrl;
 
-  RadioList({
+  Podcasts({
     this.id,
     this.name,
+    this.generId,
     this.shortDescription,
     this.profileImage,
-    this.link,
+    this.audio,
+    this.isTranding,
     this.isFeatured,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
+    this.genreName,
+    this.audioUrl,
     this.profileimageUrl,
     this.profileimageThumbUrl,
   });
 
-  RadioList.fromJson(Map<String, dynamic> json)
+  Podcasts.fromJson(Map<String, dynamic> json)
       : id = json['id'] as int?,
         name = json['name'] as String?,
+        generId = json['gener_id'] as int?,
         shortDescription = json['short_description'] as String?,
         profileImage = json['profile_image'] as String?,
-        link = json['link'] as String?,
+        audio = json['audio'] as String?,
+        isTranding = json['is_tranding'] as int?,
         isFeatured = json['is_featured'] as int?,
         createdAt = json['created_at'] as String?,
         updatedAt = json['updated_at'] as String?,
         deletedAt = json['deleted_at'],
+        genreName = json['genre_name'] as String?,
+        audioUrl = json['audio_url'] as String?,
         profileimageUrl = json['profileimage_url'] as String?,
         profileimageThumbUrl = json['profileimage_thumb_url'] as String?;
 
   Map<String, dynamic> toJson() => {
     'id' : id,
     'name' : name,
+    'gener_id' : generId,
     'short_description' : shortDescription,
     'profile_image' : profileImage,
-    'link' : link,
+    'audio' : audio,
+    'is_tranding' : isTranding,
     'is_featured' : isFeatured,
     'created_at' : createdAt,
     'updated_at' : updatedAt,
     'deleted_at' : deletedAt,
+    'genre_name' : genreName,
+    'audio_url' : audioUrl,
     'profileimage_url' : profileimageUrl,
     'profileimage_thumb_url' : profileimageThumbUrl
   };
