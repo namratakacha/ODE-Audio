@@ -6,6 +6,7 @@ import 'package:music_player/screens/bottom_navigation.dart';
 import 'package:music_player/models/dashboard_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -21,11 +22,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Data1>? musicList = [];
   List<AllSongs>? songsList = [];
   int currentPage = 1;
-
-
+  bool isLoading = false;
   bool isSelected = false;
   late List<bool> IsChecked =
       List<bool>.generate(musicList!.length, (index) => false);
+  bool shimmerEnabled = false;
+
 
   Future getAllGenres() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -45,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           AllGenresModel.fromJson(json.decode(response.body)).data;
       result?.removeLast();
       musicList?.addAll(result ?? []);
+
       setState(() {});
     } else {
       print(response.statusCode);
@@ -52,76 +55,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
-  Future getAllSongs() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    String token = preferences.getString("token") ?? "";
-
-    var url = Uri.parse(
-        'https://php71.indianic.com/odemusicapp/public/api/v1/user/songs');
-    final page = jsonEncode({
-      "limit": 10,
-      "page": 1,
-    });
-    final response = await http.post(url,
-        body: page,
-        headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-    if (response.statusCode == 200) {
-      print(response.body);
-
-      List<AllSongs>? result =
-          AllSongsModel.fromJson(json.decode(response.body)).data?.allSongs;
-      songsList?.addAll(result ?? []);
-      currentPage++;
-      setState(() {});
-    } else {
-      print(response.statusCode);
-      print('No data');
-    }
-  }
-
-  Future getResentSongs() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    String token = preferences.getString("token") ?? "";
-
-    var url = Uri.parse(
-        'https://php71.indianic.com/odemusicapp/public/api/v1/addrecentlyplayedsong');
-    final page = jsonEncode({
-      "id": 6,
-
-    });
-    final response = await http.post(url,
-        body: page,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        });
-    if (response.statusCode == 200) {
-      print(response.body);
-
-      List<AllSongs>? result =
-          AllSongsModel.fromJson(json.decode(response.body)).data?.allSongs;
-      songsList?.addAll(result ?? []);
-      setState(() {});
-    } else {
-      print(response.statusCode);
-      print('No data');
-    }
-  }
-
-
+  // getEffect()async{
+  //   setState(() async{
+  //     isLoading = true;
+  //   });
+  //   await Future.delayed(Duration(seconds: 2));
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
 
 
   @override
   void initState() {
-
     getAllGenres();
     super.initState();
+    //getEffect();
   }
 
   @override
@@ -152,7 +101,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
-            Expanded(
+           // isLoading
+           //     ? Expanded(child: Padding(
+           //   padding: const EdgeInsets.only(left: 10, right: 10),
+           //   child: GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+           //       crossAxisCount: 2,
+           //       crossAxisSpacing: 5,
+           //       mainAxisSpacing: 20),
+           //       itemCount: 21,
+           //       itemBuilder: (context, index){
+           //     return Shimmer.fromColors(
+           //     baseColor: Colors.red,
+           //       highlightColor: Colors.yellow,
+           //       child: Container(
+           //         child: Card(
+           //         shape: RoundedRectangleBorder(
+           //         borderRadius: BorderRadius.circular(10),
+           // ),),
+           //       ),
+           //     );
+           // }),
+           // ))
+           Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10),
                 child: GridView.builder(
@@ -162,59 +132,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       crossAxisSpacing: 5,
                       mainAxisSpacing: 20),
                   itemCount: musicList?.length,
-                  itemBuilder: (context, index) => Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              musicList![index].profileimageUrl.toString(),
-                              fit: BoxFit.fill,
-                            ),
-                          ),
+                  itemBuilder: (context, index) {
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                        Center(
-                            child: Text(
-                          musicList![index].name.toString(),
-                          style: TextStyle(
-                              fontSize: 24,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        )),
-                        Positioned(
-                          right: 1,
-                          top: 1,
-                          child: Transform.scale(
-                            scale: 1.3,
-                            child: Checkbox(
-                              value: IsChecked[index],
-                              activeColor: Colors.lightBlue,
-                              shape: CircleBorder(),
-                              side: MaterialStateBorderSide.resolveWith(
-                                (states) => BorderSide(
-                                    width: 1.0, color: Colors.lightBlue),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  musicList![index].profileimageUrl.toString(),
+                                  fit: BoxFit.fill,
+                                ),
                               ),
-                              onChanged: (newValue) {
-                                setState(() {
-                                  IsChecked[index] = newValue!;
-                                });
-                              },
                             ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.4),
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                            Center(
+                                child: Text(
+                                  musicList![index].name.toString(),
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                )),
+                            Positioned(
+                              right: 1,
+                              top: 1,
+                              child: Transform.scale(
+                                scale: 1.3,
+                                child: Checkbox(
+                                  value: IsChecked[index],
+                                  activeColor: Colors.lightBlue,
+                                  shape: CircleBorder(),
+                                  side: MaterialStateBorderSide.resolveWith(
+                                        (states) =>
+                                        BorderSide(
+                                            width: 1.0,
+                                            color: Colors.lightBlue),
+                                  ),
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                      IsChecked[index] = newValue!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      );
+                    }
                 ),
               ),
             ),
@@ -237,10 +211,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5))),
                               onPressed: () {
-                                getAllSongs().then((value) => Navigator.push(
+                               // getAllSongs().then((value) =>
+                                    Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => LibraryScreen())));
+                                        builder: (context) => LibraryScreen())
+                               // )
+                                );
 
                               },
                               child: Text(

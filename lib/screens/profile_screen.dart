@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:music_player/screens/terms_condition_screen.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -13,7 +16,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String phoneNumber = "";
+  String codeNumber = "";
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -69,9 +72,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _onCountryChange(CountryCode countryCode) {
-    this.phoneNumber = countryCode.toString();
+    this.codeNumber = countryCode.toString();
     //print("New Country selected: " + countryCode.toString());
   }
+
+  // Future getRecentlyPlayedSongs() async {
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   String token = preferences.getString("token") ?? "";
+  //
+  //   var url = Uri.parse(
+  //     'https://php71.indianic.com/odemusicapp/public/api/v1/getallrecentlyplayedsong',
+  //   );
+  //   final page = jsonEncode({
+  //     "limit": 10,
+  //     "page": 1,
+  //   });
+  //   final response = await http.post(url,
+  //       body: page,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //       });
+  //   if (response.statusCode == 200) {
+  //     print(response.body);
+  //     recentSongs?.clear();
+  //     List<RecentlyPlayedSongs>? result =
+  //         RecentlyPlayedModel.fromJson(json.decode(response.body)).data?.recentlyPlayedSongs;
+  //     recentSongs?.clear();
+  //     recentSongs?.addAll(result ?? []);
+  //
+  //
+  //     setState(() {});
+  //   } else {
+  //     print(response.statusCode);
+  //     print('No data');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -154,9 +191,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         flex: 1,
                         child: CountryCodePicker(
+                            initialSelection: 'CA',
                             onChanged: _onCountryChange,
-                            initialSelection: 'IN',
-                            favorite: ['+91', 'IN'],
+                            favorite: ['+1', 'CA'],
                             showCountryOnly: false,
                             showOnlyCountryWhenClosed: false,
                             alignLeft: false,

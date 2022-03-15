@@ -15,6 +15,7 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
+
   @override
   void initState() {
     Future.delayed(const Duration(seconds: 5));
@@ -23,13 +24,11 @@ class _SplashState extends State<Splash> {
   }
 
   checkLogin() async {
-    Future.delayed(const Duration(seconds: 10));
 
+    Future.delayed(const Duration(seconds: 10));
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") ?? "";
     bool? phoneLoggedIn = prefs.getBool('phoneLoggedIn');
-
-
 
     if (phoneLoggedIn ?? false) {
 
@@ -56,6 +55,7 @@ class _SplashState extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
+
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [

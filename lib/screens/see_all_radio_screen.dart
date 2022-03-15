@@ -7,6 +7,7 @@ import 'package:music_player/screens/search_screen.dart';
 import 'package:music_player/utils/radio_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class SeeAllRadio extends StatefulWidget {
   const SeeAllRadio({Key? key}) : super(key: key);
@@ -18,7 +19,8 @@ class SeeAllRadio extends StatefulWidget {
 class _SeeAllRadioState extends State<SeeAllRadio> {
 
   List<RadioList>? radioList = [];
-
+  int currentPage = 1;
+  final RefreshController refreshController = RefreshController(initialRefresh: false);
 
 
   Future getRadioList() async {
@@ -30,7 +32,7 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
     );
     final page = jsonEncode({
       "limit": 10,
-      "page": 1,
+      "page": currentPage,
     });
     final response = await http.post(url,
         body: page,
@@ -45,6 +47,7 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
       List<RadioList>? result =
           RadioModel.fromJson(json.decode(response.body)).data?.radio;
       radioList?.addAll(result ?? []);
+      currentPage++;
       setState(() {});
     } else {
       print(response.statusCode);
@@ -113,10 +116,24 @@ class _SeeAllRadioState extends State<SeeAllRadio> {
         color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.only(top: 20),
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (context, index) => allSongsCard(radioList![index]),
-            itemCount: radioList?.length,
+          child: SmartRefresher(
+            controller: refreshController,
+            enablePullUp: true,
+            enablePullDown: false,
+            onLoading: () async{
+              final data = getRadioList();
+              if(data==true){
+                refreshController.loadComplete();
+              }
+              else{
+                refreshController.loadNoData();
+              }
+            },
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemBuilder: (context, index) => allSongsCard(radioList![index]),
+              itemCount: radioList?.length,
+            ),
           ),),),
     );
   }

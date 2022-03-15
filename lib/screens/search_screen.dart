@@ -146,7 +146,6 @@ class MySearchDelegate extends SearchDelegate {
       future: getAllSearchSong(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-
           return Scaffold(
             body: ListView.builder(
               shrinkWrap: true,

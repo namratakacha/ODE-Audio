@@ -142,7 +142,6 @@ class _LibraryPageState extends State<LibraryPage> {
   void initState() {
     getAllSongs();
     getRecentlyPlayedSongs();
-
     //getResentSongs();
     super.initState();
   }
