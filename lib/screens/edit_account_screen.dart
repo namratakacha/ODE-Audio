@@ -117,7 +117,7 @@ class _EditAccountState extends State<EditAccount> {
                         name: nameController.text,
                         email: emailController.text,
                         phone: phoneController.text,
-
+                        img: pickedImage!.path,
                     )));
           },
           icon: Padding(
@@ -148,9 +148,9 @@ class _EditAccountState extends State<EditAccount> {
                       child: (pickedImage != null)?
                       CircleAvatar(
                         radius: 50,
-                        foregroundImage: NetworkImage(user?.photoURL ?? widget.img ?? ''),
+                        foregroundImage: FileImage(File(pickedImage!.path)),
                         backgroundImage:
-                        FileImage(pickedImage!),
+                        AssetImage('assets/images/temp/profile_pic_camera.PNG'),
                       )
                           :CircleAvatar(
                         radius: 50,
@@ -251,7 +251,7 @@ class _EditAccountState extends State<EditAccount> {
                                 borderRadius: BorderRadius.circular(5))),
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.push(
+                            Navigator.pop(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => MyAccountPage(

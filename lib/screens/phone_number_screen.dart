@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:music_player/models/profile_update_model.dart';
 import 'package:music_player/screens/dashboard_screen.dart';
+import 'package:music_player/screens/profile_screen.dart';
 import 'package:music_player/utils/screen_size.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,7 +42,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         token = LoginModel.fromJson(json.decode(response.body)).data?.token.toString();
         print("My token is - $token");
         setToken(token.toString());
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>DashboardScreen()));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileScreen(phone: phoneController.text, code: codeNumber)));
       } else{
         print(phoneController.text);
         print(codeNumber);
@@ -50,6 +52,37 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Blank field not allowed')));
     }
   }
+
+  // Future addProfileUpdate() async {
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   String token = preferences.getString("token") ?? "";
+  //
+  //   var url = Uri.parse(
+  //     'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
+  //   );
+  //   final page = jsonEncode({
+  //     "gender": 10,
+  //     "profile_image": 1,
+  //     "phone_number": phoneController.text,
+  //   });
+  //   final response = await http.post(url,
+  //       body: page,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //       });
+  //   if (response.statusCode == 200) {
+  //     print(response.body);
+  //     return
+  //         ProfileUpdateModel.fromJson(json.decode(response.body));
+  //
+  //     setState(() {});
+  //   } else {
+  //     print(response.statusCode);
+  //     print('No data');
+  //   }
+  // }
 
 
   @override
@@ -152,9 +185,11 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                               onPressed: () async{
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
                                 prefs.setBool('phoneLoggedIn', true);
+                               // prefs.setString('phone', phoneController.text);
                                 if (_formKey.currentState!.validate()) {
                                   login();
                                   print('phone login');
+                                  phoneController.text = phoneController.text;
                                 }
                               },
                               // ignore: prefer_const_constructors

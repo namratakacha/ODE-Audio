@@ -1,5 +1,8 @@
 
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:music_player/screens/contact_us_screen.dart';
@@ -12,14 +15,17 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/profile_update_model.dart';
+
 
 class MyAccountPage extends StatefulWidget {
   String? name;
   String? email;
   String? phone;
+  String? code;
   String? img;
 
-  MyAccountPage({Key? myKey, this.name, this.email, this.phone, this.img})
+  MyAccountPage({Key? myKey, this.name, this.email, this.phone, this.img, this.code})
       : super(key: myKey);
 
   @override
@@ -28,31 +34,84 @@ class MyAccountPage extends StatefulWidget {
 
 class _MyAccountPageState extends State<MyAccountPage> {
   bool isSwitched = false;
+  String name = '';
 
-  Future<void> logout() async{
+  // Future addProfileUpdate() async {
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   String token = preferences.getString("token") ?? "";
+  //
+  //   var url = Uri.parse(
+  //     'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
+  //   );
+  //   final page = jsonEncode({
+  //     "name": widget.name,
+  //     "email": widget.email,
+  //     "gender": 'Male',
+  //     "profile_image": widget.img,
+  //     "phone_number": widget.phone,
+  //   });
+  //   final response = await http.post(url,
+  //       body: page,
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //       });
+  //   if (response.statusCode == 200) {
+  //     print(response.body);
+  //
+  //     ProfileUpdateModel.fromJson(json.decode(response.body)).data;
+  //
+  //
+  //     setState(() {
+  //
+  //     });
+  //   } else {
+  //     print(response.statusCode);
+  //     print('No data');
+  //   }
+  // }
+  //
+  // Future<void> logout() async{
+  //   SharedPreferences preferences = await SharedPreferences.getInstance();
+  //   String token = preferences.getString("token") ?? "";
+  //
+  //     var response = await http.post(Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/user/logout'),
+  //
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Accept': 'application/json',
+  //           'Authorization': 'Bearer $token',
+  //         }
+  //     );
+  //     if(response.statusCode==200){
+  //       print(response.statusCode);
+  //       Navigator.pushAndRemoveUntil(
+  //           context,
+  //           MaterialPageRoute(
+  //               builder: (context) => LoginScreen()),
+  //               (route) => false);
+  //     } else{
+  //       print(response.statusCode);
+  //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
+  //     }
+  //
+  // }
+
+  Future accountDetail() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String token = preferences.getString("token") ?? "";
+     final name = preferences.getString('name')??'';
+     final email = preferences.getString('email')??'';
+     final phone = preferences.getString('phone')??'';
+     final code = preferences.getString('code')??'';
+     MyAccountPage(name: name, email: email, phone: phone, code: code);
+  }
 
-      var response = await http.post(Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/user/logout'),
-
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          }
-      );
-      if(response.statusCode==200){
-        print(response.statusCode);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) => LoginScreen()),
-                (route) => false);
-      } else{
-        print(response.statusCode);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
-      }
-
+ @override
+  void initState()  {
+    //addProfileUpdate();
+      accountDetail();
+    super.initState();
   }
 
 
@@ -149,7 +208,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                       },
                       child: CircleAvatar(
                         radius: 50,
-                        foregroundImage: NetworkImage(user?.photoURL ?? widget.img ?? ''),
+                        foregroundImage: NetworkImage(user?.photoURL ?? widget.img?? ''),
                         backgroundImage:
                         AssetImage('assets/images/temp/profile_pic_camera.PNG'),
                       ),

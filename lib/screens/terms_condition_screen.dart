@@ -37,7 +37,7 @@ class _TermsAndConditionScreenState extends State<TermsAndConditionScreen> {
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                MaterialPageRoute(builder: (context) => ProfileScreen()));
           },
           icon: Icon(Icons.arrow_back_ios),
           color: Colors.black,

@@ -3,13 +3,20 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:music_player/screens/terms_condition_screen.dart';
+
+import 'package:music_player/models/profile_update_model.dart';
+import 'package:music_player/screens/dashboard_screen.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  String? phone;
+  String? code;
+  ProfileScreen({Key? key, this.phone, this.code}) : super(key: key);
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -23,6 +30,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String _selectedGender = 'male';
   File? pickedImage;
+
+
+
+  Future addProfileUpdate() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+      'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
+    );
+    final page = jsonEncode({
+      "name": nameController.text,
+      "email": emailController.text,
+      "gender": _selectedGender,
+      "profile_image": pickedImage,
+      "phone_number": phoneController.text,
+    });
+    final response = await http.post(url,
+        body: page,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        });
+    if (response.statusCode == 200) {
+      print(response.body);
+
+        Data.fromJson(json.decode(response.body));
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  DashboardScreen()));
+
+
+      setState(() {
+
+      });
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
 
   Future<void> _showChoiceDialog(BuildContext context) {
     return showDialog(
@@ -76,39 +126,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     //print("New Country selected: " + countryCode.toString());
   }
 
-  // Future getRecentlyPlayedSongs() async {
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-  //   String token = preferences.getString("token") ?? "";
-  //
-  //   var url = Uri.parse(
-  //     'https://php71.indianic.com/odemusicapp/public/api/v1/getallrecentlyplayedsong',
-  //   );
-  //   final page = jsonEncode({
-  //     "limit": 10,
-  //     "page": 1,
-  //   });
-  //   final response = await http.post(url,
-  //       body: page,
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       });
-  //   if (response.statusCode == 200) {
-  //     print(response.body);
-  //     recentSongs?.clear();
-  //     List<RecentlyPlayedSongs>? result =
-  //         RecentlyPlayedModel.fromJson(json.decode(response.body)).data?.recentlyPlayedSongs;
-  //     recentSongs?.clear();
-  //     recentSongs?.addAll(result ?? []);
-  //
-  //
-  //     setState(() {});
-  //   } else {
-  //     print(response.statusCode);
-  //     print('No data');
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             showOnlyCountryWhenClosed: false,
                             alignLeft: false,
                             showDropDownButton: true,
-                            showFlag: true),
+                            showFlag: false),
                       ),
                       Expanded(
                         flex: 2,
@@ -287,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            TermsAndConditionScreen()));
+                                            DashboardScreen()));
                               },
                               child: Text(
                                 'Skip',
@@ -304,13 +321,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 primary: Colors.lightBlue,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(5))),
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            TermsAndConditionScreen()));
+                                addProfileUpdate();
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) =>
+                                //             MyAccountPage(name: nameController.text,phone: phoneController.text,email: emailController.text,img: pickedImage?.path.toString())));
+                                SharedPreferences preferences = await SharedPreferences.getInstance();
+                                preferences.setString("name", nameController.text);
+                                preferences.setString("email", emailController.text);
+                                preferences.setString("phone", phoneController.text);
+                                preferences.setString("code", codeNumber);
+
                               }
                             },
                             child: Text('Done')),
