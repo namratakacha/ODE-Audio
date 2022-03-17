@@ -1,3 +1,5 @@
+
+
 class ProfileUpdateModel {
   final Settings? settings;
   final Data? data;
@@ -147,6 +149,6 @@ class Data {
     'updated_at' : updatedAt,
     'deleted_at' : deletedAt,
     'profileimage_url' : profileimageUrl,
-    'profileimage_thumb_url' : profileimageThumbUrl
+    'profileimage_thumb_url' : profileimageThumbUrl,
   };
 }

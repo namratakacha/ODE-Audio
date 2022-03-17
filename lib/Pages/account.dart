@@ -1,8 +1,4 @@
 
-
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:music_player/screens/contact_us_screen.dart';
@@ -13,19 +9,15 @@ import 'package:music_player/screens/rating_screen.dart';
 import 'package:music_player/utils/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-
-import '../models/profile_update_model.dart';
 
 
 class MyAccountPage extends StatefulWidget {
   String? name;
   String? email;
   String? phone;
-  String? code;
   String? img;
 
-  MyAccountPage({Key? myKey, this.name, this.email, this.phone, this.img, this.code})
+  MyAccountPage({Key? myKey, this.name, this.email, this.phone, this.img})
       : super(key: myKey);
 
   @override
@@ -34,87 +26,31 @@ class MyAccountPage extends StatefulWidget {
 
 class _MyAccountPageState extends State<MyAccountPage> {
   bool isSwitched = false;
-  String name = '';
+  String? name = '';
+  String? email = '';
+  String? phone = '';
+  String? img;
 
-  // Future addProfileUpdate() async {
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-  //   String token = preferences.getString("token") ?? "";
-  //
-  //   var url = Uri.parse(
-  //     'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
-  //   );
-  //   final page = jsonEncode({
-  //     "name": widget.name,
-  //     "email": widget.email,
-  //     "gender": 'Male',
-  //     "profile_image": widget.img,
-  //     "phone_number": widget.phone,
-  //   });
-  //   final response = await http.post(url,
-  //       body: page,
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       });
-  //   if (response.statusCode == 200) {
-  //     print(response.body);
-  //
-  //     ProfileUpdateModel.fromJson(json.decode(response.body)).data;
-  //
-  //
-  //     setState(() {
-  //
-  //     });
-  //   } else {
-  //     print(response.statusCode);
-  //     print('No data');
-  //   }
-  // }
-  //
-  // Future<void> logout() async{
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-  //   String token = preferences.getString("token") ?? "";
-  //
-  //     var response = await http.post(Uri.parse('https://php71.indianic.com/odemusicapp/public/api/v1/user/logout'),
-  //
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Accept': 'application/json',
-  //           'Authorization': 'Bearer $token',
-  //         }
-  //     );
-  //     if(response.statusCode==200){
-  //       print(response.statusCode);
-  //       Navigator.pushAndRemoveUntil(
-  //           context,
-  //           MaterialPageRoute(
-  //               builder: (context) => LoginScreen()),
-  //               (route) => false);
-  //     } else{
-  //       print(response.statusCode);
-  //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid credentials')));
-  //     }
-  //
-  // }
 
-  Future accountDetail() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-     final name = preferences.getString('name')??'';
-     final email = preferences.getString('email')??'';
-     final phone = preferences.getString('phone')??'';
-     final code = preferences.getString('code')??'';
-     MyAccountPage(name: name, email: email, phone: phone, code: code);
-  }
 
- @override
+  @override
   void initState()  {
-    //addProfileUpdate();
-      accountDetail();
+    loadWishlistToken();
     super.initState();
   }
 
-
+  loadWishlistToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      name = prefs.getString('name') ?? "";
+      print(name);
+      email = prefs.getString('email') ?? "";
+      print(email);
+      phone = prefs.getString('phone_number') ?? "";
+      print(phone);
+      img = prefs.getString('profileimage_url') ?? "";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +144,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                       },
                       child: CircleAvatar(
                         radius: 50,
-                        foregroundImage: NetworkImage(user?.photoURL ?? widget.img?? ''),
+                        foregroundImage: NetworkImage(user?.photoURL ?? img ?? ''),
                         backgroundImage:
                         AssetImage('assets/images/temp/profile_pic_camera.PNG'),
                       ),
@@ -227,16 +163,16 @@ class _MyAccountPageState extends State<MyAccountPage> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => EditAccount(
-                                          name: widget.name ??
+                                          name: name ??
                                               user?.displayName ??
                                               'Namrata Kacha',
-                                          email: widget.email ??
+                                          email: email ??
                                               user?.email ??
                                               'namrata.kacha@gmail.com',
-                                          phone: widget.phone ??
+                                          phone: phone ??
                                               user?.phoneNumber ??
                                               '',
-                                          img: widget.img ??
+                                          img: img ??
                                               user?.photoURL ??
                                               'assets/images/temp/profile_pic_camera.PNG',
                                         )));
@@ -252,17 +188,19 @@ class _MyAccountPageState extends State<MyAccountPage> {
                 ],
               ),
               Text(
-                widget.name ?? user?.displayName ?? 'Namrata Kacha',
+                name??
+                user?.displayName ?? 'Namrata Kacha',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               Text(
-                widget.email ?? user?.email ?? 'namrata.kacha@gmail.com',
+                email??
+                user?.email ?? 'namrata.kacha@gmail.com',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),
               Text(
-                widget.phone ?? '',
+                phone?? '',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),

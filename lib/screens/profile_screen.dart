@@ -3,19 +3,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-
 import 'package:music_player/models/profile_update_model.dart';
 import 'package:music_player/screens/dashboard_screen.dart';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:http_parser/http_parser.dart';
 
 class ProfileScreen extends StatefulWidget {
   String? phone;
   String? code;
+
   ProfileScreen({Key? key, this.phone, this.code}) : super(key: key);
 
   @override
@@ -31,43 +29,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _selectedGender = 'male';
   File? pickedImage;
 
-
-
   Future addProfileUpdate() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String token = preferences.getString("token") ?? "";
 
+
     var url = Uri.parse(
       'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
     );
-    final page = jsonEncode({
-      "name": nameController.text,
-      "email": emailController.text,
-      "gender": _selectedGender,
-      "profile_image": pickedImage,
-      "phone_number": phoneController.text,
-    });
-    final response = await http.post(url,
-        body: page,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        });
+    http.MultipartRequest request = http.MultipartRequest("POST", url);
+
+    http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
+      'profile_image',
+      pickedImage!.path,
+      contentType: MediaType("image", "${pickedImage!.path.split(".").last}"),
+    );
+
+    File(pickedImage!.path).exists().then((value) => print(value));
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Content-Type'] = 'multipart/form-data';
+    request.fields["name"] = nameController.text;
+    request.fields["email"] = emailController.text;
+    request.fields["gender"] = _selectedGender;
+    request.fields["phone_number"] = phoneController.text;
+    request.files.add(multipartFile);
+
+    var response = await request.send();
+
     if (response.statusCode == 200) {
-      print(response.body);
+      print(response.statusCode);
 
-        Data.fromJson(json.decode(response.body));
+      final res = await http.Response.fromStream(response);
+      print(res.body);
+
+      var name = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.name
+          .toString();
+      var email = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.email
+          .toString();
+      var phone = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.phoneNumber
+          .toString();
+      var img = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.profileimageUrl
+          .toString();
+      var _selectedGender = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.gender.toString();
+
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      preferences.setString("name", name!);
+      preferences.setString("email", email!);
+      preferences.setString("phone_number", phone!);
+      preferences.setString("profileimage_url", img!);
+     // preferenc('gender', _selectedGender!);
+
       Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  DashboardScreen()));
+          context, MaterialPageRoute(builder: (context) => DashboardScreen()));
 
-
-      setState(() {
-
-      });
+      setState(() {});
     } else {
       print(response.statusCode);
       print('No data');
@@ -125,7 +151,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     this.codeNumber = countryCode.toString();
     //print("New Country selected: " + countryCode.toString());
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -329,11 +354,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 //     MaterialPageRoute(
                                 //         builder: (context) =>
                                 //             MyAccountPage(name: nameController.text,phone: phoneController.text,email: emailController.text,img: pickedImage?.path.toString())));
-                                SharedPreferences preferences = await SharedPreferences.getInstance();
-                                preferences.setString("name", nameController.text);
-                                preferences.setString("email", emailController.text);
-                                preferences.setString("phone", phoneController.text);
-                                preferences.setString("code", codeNumber);
 
                               }
                             },
@@ -359,6 +379,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() {
       this.pickedImage = imageTemporary;
+      print(pickedImage);
     });
 
     Navigator.pop(context);
@@ -373,6 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() {
       this.pickedImage = imageTemporary;
+      print(pickedImage);
     });
     Navigator.pop(context);
   }
