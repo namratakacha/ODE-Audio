@@ -21,13 +21,41 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String codeNumber = "";
+  late String codeNumber;
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String _selectedGender = 'male';
   File? pickedImage;
+
+  void _openGallery(BuildContext context) async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null){
+      setState(() {
+        pickedImage = File(pickedFile.path);
+        print(pickedImage);
+      });
+      Navigator.pop(context);
+    }
+  }
+
+  void _openCamera(BuildContext context) async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        pickedImage = File(pickedFile.path);
+        print(pickedImage);
+      });
+      Navigator.pop(context);
+    }
+  }
+
+
 
   Future addProfileUpdate() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -37,10 +65,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     var url = Uri.parse(
       'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
     );
+
+
     http.MultipartRequest request = http.MultipartRequest("POST", url);
 
     http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
-      'profile_image',
+        'profile_image',
       pickedImage!.path,
       contentType: MediaType("image", "${pickedImage!.path.split(".").last}"),
     );
@@ -88,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       preferences.setString("email", email!);
       preferences.setString("phone_number", phone!);
       preferences.setString("profileimage_url", img!);
-     // preferenc('gender', _selectedGender!);
+      preferences.setString('gender', _selectedGender!);
 
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => DashboardScreen()));
@@ -148,8 +178,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _onCountryChange(CountryCode countryCode) {
-    this.codeNumber = countryCode.toString();
+    codeNumber = countryCode.toString();
     //print("New Country selected: " + countryCode.toString());
+  }
+
+  @override
+  void initState() {
+    phoneController = TextEditingController(text: widget.phone);
+    codeNumber = widget.code!;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -233,9 +278,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         flex: 1,
                         child: CountryCodePicker(
-                            initialSelection: 'CA',
+                            initialSelection: codeNumber,
                             onChanged: _onCountryChange,
-                            favorite: ['+1', 'CA'],
+                           // favorite: ['+1', 'CA'],
                             showCountryOnly: false,
                             showOnlyCountryWhenClosed: false,
                             alignLeft: false,
@@ -330,6 +375,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     MaterialPageRoute(
                                         builder: (context) =>
                                             DashboardScreen()));
+                               // addProfileUpdate();
                               },
                               child: Text(
                                 'Skip',
@@ -349,12 +395,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 addProfileUpdate();
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (context) =>
-                                //             MyAccountPage(name: nameController.text,phone: phoneController.text,email: emailController.text,img: pickedImage?.path.toString())));
-
                               }
                             },
                             child: Text('Done')),
@@ -370,32 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _openGallery(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile == null) return;
-    final imageTemporary = File(pickedFile.path);
 
-    setState(() {
-      this.pickedImage = imageTemporary;
-      print(pickedImage);
-    });
 
-    Navigator.pop(context);
-  }
 
-  void _openCamera(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-    );
-    if (pickedFile == null) return;
-    final imageTemporary = File(pickedFile.path);
-
-    setState(() {
-      this.pickedImage = imageTemporary;
-      print(pickedImage);
-    });
-    Navigator.pop(context);
-  }
 }

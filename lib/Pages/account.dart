@@ -16,8 +16,9 @@ class MyAccountPage extends StatefulWidget {
   String? email;
   String? phone;
   String? img;
+  String? gender;
 
-  MyAccountPage({Key? myKey, this.name, this.email, this.phone, this.img})
+  MyAccountPage({Key? myKey, this.name, this.email, this.phone, this.img, this.gender})
       : super(key: myKey);
 
   @override
@@ -26,29 +27,29 @@ class MyAccountPage extends StatefulWidget {
 
 class _MyAccountPageState extends State<MyAccountPage> {
   bool isSwitched = false;
-  String? name = '';
-  String? email = '';
-  String? phone = '';
+  String? name;
+  String? email;
+  String? phone;
   String? img;
 
 
 
   @override
   void initState()  {
-    loadWishlistToken();
+    loadUserData();
     super.initState();
   }
 
-  loadWishlistToken() async {
+  loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      name = prefs.getString('name') ?? "";
+      name = prefs.getString('name');
       print(name);
-      email = prefs.getString('email') ?? "";
+      email = prefs.getString('email');
       print(email);
-      phone = prefs.getString('phone_number') ?? "";
+      phone = prefs.getString('phone_number');
       print(phone);
-      img = prefs.getString('profileimage_url') ?? "";
+      img = prefs.getString('profileimage_url');
     });
   }
 
@@ -144,9 +145,9 @@ class _MyAccountPageState extends State<MyAccountPage> {
                       },
                       child: CircleAvatar(
                         radius: 50,
-                        foregroundImage: NetworkImage(user?.photoURL ?? img ?? ''),
+                        foregroundImage: NetworkImage(user?.photoURL ?? img ?? widget.img ?? ''),
                         backgroundImage:
-                        AssetImage('assets/images/temp/profile_pic_camera.PNG'),
+                        AssetImage( widget.img ?? 'assets/images/temp/profile_pic_camera.PNG'),
                       ),
                     ),
                   ),
@@ -163,16 +164,16 @@ class _MyAccountPageState extends State<MyAccountPage> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => EditAccount(
-                                          name: name ??
+                                          name: name ?? widget.name ??
                                               user?.displayName ??
-                                              'Namrata Kacha',
-                                          email: email ??
+                                              '',
+                                          email: email ?? widget.email ??
                                               user?.email ??
-                                              'namrata.kacha@gmail.com',
-                                          phone: phone ??
+                                              '',
+                                          phone: phone ?? widget.phone ??
                                               user?.phoneNumber ??
                                               '',
-                                          img: img ??
+                                          img: img ?? widget.img ??
                                               user?.photoURL ??
                                               'assets/images/temp/profile_pic_camera.PNG',
                                         )));
@@ -189,18 +190,21 @@ class _MyAccountPageState extends State<MyAccountPage> {
               ),
               Text(
                 name??
-                user?.displayName ?? 'Namrata Kacha',
+                    widget.name ??
+                user?.displayName ?? '',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               Text(
                 email??
-                user?.email ?? 'namrata.kacha@gmail.com',
+                    widget.email ??
+                user?.email ?? '',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),
               Text(
-                phone?? '',
+                phone??
+                    widget.phone ?? '',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
               ),

@@ -1,16 +1,22 @@
+import 'dart:convert';
 import 'dart:io';
-
 
 import 'package:flutter/material.dart';
 import 'package:music_player/Pages/account.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:music_player/models/profile_update_model.dart';
+import 'package:music_player/screens/dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class EditAccount extends StatefulWidget {
   String? name;
   String? email;
   String? phone;
   String? img;
+
   EditAccount({Key? myKey, this.name, this.email, this.phone, this.img})
       : super(key: myKey);
 
@@ -23,72 +29,147 @@ class _EditAccountState extends State<EditAccount> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String _selectedGender = 'Female';
+  String _selectedGender = '';
   final user = FirebaseAuth.instance.currentUser;
   File? pickedImage;
+  String? name;
 
   Future<void> _showChoiceDialog(BuildContext context) {
     return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(
-              "Choose option",
-              style: TextStyle(color: Colors.blue),
-            ),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: [
-                  Divider(
-                    height: 1,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            "Choose option",
+            style: TextStyle(color: Colors.blue),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                Divider(
+                  height: 1,
+                  color: Colors.blue,
+                ),
+                ListTile(
+                  onTap: () {
+                    _openGallery(context);
+                  },
+                  title: Text("Gallery"),
+                  leading: Icon(
+                    Icons.account_box,
                     color: Colors.blue,
                   ),
-                  ListTile(
-                    onTap: () {
-                      _openGallery(context);
-                    },
-                    title: Text("Gallery"),
-                    leading: Icon(
-                      Icons.account_box,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  Divider(
-                    height: 1,
+                ),
+                Divider(
+                  height: 1,
+                  color: Colors.blue,
+                ),
+                ListTile(
+                  onTap: () {
+                    _openCamera(context);
+                  },
+                  title: Text("Camera"),
+                  leading: Icon(
+                    Icons.camera,
                     color: Colors.blue,
                   ),
-                  ListTile(
-                    onTap: () {
-                      _openCamera(context);
-                    },
-                    title: Text("Camera"),
-                    leading: Icon(
-                      Icons.camera,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },);
+          ),
+        );
+      },
+    );
   }
 
+  Future addProfileUpdate() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+
+    var url = Uri.parse(
+      'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
+    );
+    http.MultipartRequest request = http.MultipartRequest("POST", url);
+
+    http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
+      'profile_image',
+      pickedImage!.path,
+      contentType: MediaType("image", "${pickedImage!.path.split(".").last}"),
+    );
+
+    File(pickedImage!.path).exists().then((value) => print(value));
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Content-Type'] = 'multipart/form-data';
+    request.fields["name"] = nameController.text;
+    request.fields["email"] = emailController.text;
+    request.fields["gender"] = _selectedGender;
+    request.fields["phone_number"] = phoneController.text;
+    request.files.add(multipartFile);
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      print(response.statusCode);
+
+      final res = await http.Response.fromStream(response);
+      print(res.body);
+
+      var name = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.name
+          .toString();
+      var email = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.email
+          .toString();
+      var phone = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.phoneNumber
+          .toString();
+      var img = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.profileimageUrl
+          .toString();
+      var _selectedGender = ProfileUpdateModel.fromJson(json.decode(res.body))
+          .data
+          ?.gender.toString();
+
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      preferences.setString("name", name!);
+      preferences.setString("email", email!);
+      preferences.setString("phone_number", phone!);
+      preferences.setString("profileimage_url", img!);
+      preferences.setString('gender', _selectedGender!);
+
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => MyAccountPage()));
+
+      setState(() {});
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
   @override
   void initState() {
     super.initState();
+  //  addProfileUpdate();
+    setGender();
     nameController = TextEditingController(text: widget.name);
     emailController = TextEditingController(text: widget.email);
     phoneController = TextEditingController(text: widget.phone);
   }
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    emailController.dispose();
-    phoneController.dispose();
-    super.dispose();
+  setGender() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedGender = prefs.getString('gender') ?? "";
+      print(_selectedGender);
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -114,11 +195,11 @@ class _EditAccountState extends State<EditAccount> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => MyAccountPage(
-                        name: nameController.text,
-                        email: emailController.text,
-                        phone: phoneController.text,
-                        img: pickedImage!.path,
-                    )));
+                          name: nameController.text,
+                          email: emailController.text,
+                          phone: phoneController.text,
+                          img: pickedImage!.path,
+                        )));
           },
           icon: Padding(
             padding: const EdgeInsets.only(left: 11),
@@ -142,22 +223,24 @@ class _EditAccountState extends State<EditAccount> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     InkWell(
-                      onTap: (){
+                      onTap: () {
                         _showChoiceDialog(context);
                       },
-                      child: (pickedImage != null)?
-                      CircleAvatar(
-                        radius: 50,
-                        foregroundImage: FileImage(File(pickedImage!.path)),
-                        backgroundImage:
-                        AssetImage('assets/images/temp/profile_pic_camera.PNG'),
-                      )
-                          :CircleAvatar(
-                        radius: 50,
-                        foregroundImage: NetworkImage(user?.photoURL ?? widget.img ?? ''),
-                        backgroundImage:
-                        AssetImage('assets/images/temp/profile_pic_camera.PNG'),
-                      ),
+                      child: (pickedImage != null)
+                          ? CircleAvatar(
+                              radius: 50,
+                              foregroundImage:
+                                  FileImage(File(pickedImage!.path)),
+                              backgroundImage: AssetImage(
+                                  'assets/images/temp/profile_pic_camera.PNG'),
+                            )
+                          : CircleAvatar(
+                              radius: 50,
+                              foregroundImage: NetworkImage(
+                                  user?.photoURL ?? widget.img ?? ''),
+                              backgroundImage: AssetImage(widget.img ??
+                                  'assets/images/temp/profile_pic_camera.PNG'),
+                            ),
                     ),
                   ],
                 ),
@@ -249,18 +332,14 @@ class _EditAccountState extends State<EditAccount> {
                             primary: Colors.lightBlue,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5))),
-                        onPressed: () {
+                        onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.pop(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => MyAccountPage(
-                                          name: nameController.text,
-                                          email: emailController.text,
-                                          phone: phoneController.text,
-                                          img: pickedImage!.path,
-                                        )));
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.setString('gender', _selectedGender);
+                            addProfileUpdate();
                           }
+
                         },
                         child: Text(
                           'Save Changes',
@@ -275,30 +354,28 @@ class _EditAccountState extends State<EditAccount> {
       ),
     );
   }
+
   void _openGallery(BuildContext context) async {
-    final XFile? pickedFile = await ImagePicker().pickImage(
+    var pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
-    if (pickedFile == null) return;
-    final imageTemporary = File(pickedFile.path);
-
-    setState(() {
-      this.pickedImage = imageTemporary;
-    });
-
-    Navigator.pop(context);
+    if (pickedFile != null) {
+      setState(() {
+        pickedImage = File(pickedFile.path);
+        Navigator.pop(context);
+      });
+    }
   }
 
   void _openCamera(BuildContext context) async {
-    final XFile? pickedFile = await ImagePicker().pickImage(
+    var pickedFile = await ImagePicker().pickImage(
       source: ImageSource.camera,
     );
-    if (pickedFile == null) return;
-    final imageTemporary = File(pickedFile.path);
-
-    setState(() {
-      this.pickedImage = imageTemporary;
-    });
-    Navigator.pop(context);
+    if (pickedFile != null) {
+      setState(() {
+        pickedImage = File(pickedFile.path);
+        Navigator.pop(context);
+      });
+    }
   }
 }

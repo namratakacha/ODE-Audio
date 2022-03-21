@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:music_player/models/profile_update_model.dart';
-import 'package:music_player/screens/dashboard_screen.dart';
 import 'package:music_player/screens/profile_screen.dart';
 import 'package:music_player/utils/screen_size.dart';
 import 'package:http/http.dart' as http;
@@ -20,12 +18,12 @@ class PhoneNumberScreen extends StatefulWidget {
 
 class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
   TextEditingController phoneController = TextEditingController();
-  String codeNumber = "";
+  String? codeNumber = '+1';
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isValidate = true;
 
   void _onCountryChange(CountryCode countryCode) {
-    this.codeNumber = countryCode.toString();
+    codeNumber = countryCode.toString();
     //print("New Country selected: " + countryCode.toString());
   }
 
@@ -52,37 +50,6 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Blank field not allowed')));
     }
   }
-
-  // Future addProfileUpdate() async {
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-  //   String token = preferences.getString("token") ?? "";
-  //
-  //   var url = Uri.parse(
-  //     'https://php71.indianic.com/odemusicapp/public/api/v1/user/update',
-  //   );
-  //   final page = jsonEncode({
-  //     "gender": 10,
-  //     "profile_image": 1,
-  //     "phone_number": phoneController.text,
-  //   });
-  //   final response = await http.post(url,
-  //       body: page,
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       });
-  //   if (response.statusCode == 200) {
-  //     print(response.body);
-  //     return
-  //         ProfileUpdateModel.fromJson(json.decode(response.body));
-  //
-  //     setState(() {});
-  //   } else {
-  //     print(response.statusCode);
-  //     print('No data');
-  //   }
-  // }
 
 
   @override
