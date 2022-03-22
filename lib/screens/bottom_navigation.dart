@@ -14,10 +14,12 @@ import 'package:miniplayer/miniplayer.dart';
 
 class LibraryScreen extends StatefulWidget {
   String? songTitle;
-
+  int? selectedIndex= 0;
   LibraryScreen({
     Key? key,
     this.songTitle,
+    this.selectedIndex
+
   }) : super(key: key);
 
   @override
@@ -200,8 +202,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+
+    _selectedIndex = widget.selectedIndex ?? 0;
     Tabs = [
       LibraryPage(miniPlayer),
       RadioPage(),

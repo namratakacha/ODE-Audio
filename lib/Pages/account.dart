@@ -31,12 +31,13 @@ class _MyAccountPageState extends State<MyAccountPage> {
   String? email;
   String? phone;
   String? img;
+  final user = FirebaseAuth.instance.currentUser;
 
 
 
   @override
   void initState()  {
-    loadUserData();
+      loadUserData();
     super.initState();
   }
 
@@ -55,7 +56,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+
 
     return Scaffold(
       appBar: AppBar(
@@ -158,29 +159,32 @@ class _MyAccountPageState extends State<MyAccountPage> {
                       width: 75,
                       child: Align(
                         alignment: Alignment.topRight,
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => EditAccount(
-                                          name: name ?? widget.name ??
-                                              user?.displayName ??
-                                              '',
-                                          email: email ?? widget.email ??
-                                              user?.email ??
-                                              '',
-                                          phone: phone ?? widget.phone ??
-                                              user?.phoneNumber ??
-                                              '',
-                                          img: img ?? widget.img ??
-                                              user?.photoURL ??
-                                              'assets/images/temp/profile_pic_camera.PNG',
-                                        )));
-                          },
-                          icon: Icon(
-                            Icons.edit,
-                            color: Colors.lightBlue,
+                        child: Visibility(
+                          visible: user==null?true:false,
+                          child: IconButton(
+                            onPressed: () async {
+                            Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => EditAccount(
+                                            name: name ?? widget.name ??
+                                                user?.displayName ??
+                                                '',
+                                            email: email ?? widget.email ??
+                                                user?.email ??
+                                                '',
+                                            phone: phone ?? widget.phone ??
+                                                user?.phoneNumber ??
+                                                '',
+                                            img: img ?? widget.img ??
+                                                user?.photoURL ??
+                                                'assets/images/temp/profile_pic_camera.PNG',
+                                          )));
+                            },
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.lightBlue,
+                            ),
                           ),
                         ),
                       ),

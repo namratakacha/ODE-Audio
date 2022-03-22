@@ -26,6 +26,7 @@ class _RadioPageState extends State<RadioPage> {
   @override
   void initState() {
     getRadioList();
+
     super.initState();
   }
 
@@ -73,6 +74,7 @@ class _RadioPageState extends State<RadioPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text(

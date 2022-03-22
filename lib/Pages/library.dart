@@ -188,39 +188,45 @@ class _LibraryPageState extends State<LibraryPage> {
           children: [
             Padding(
               padding: const EdgeInsets.all(11),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'RECENTLY PLAYED',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      getRecentlyPlayedSongs().then((value) => addResentSongs()).then((value) => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SeeAllSongs())));
-
-                    },
-                    child: Text(
-                      'See All',
-                      style: TextStyle(
-                          color: Colors.lightBlue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
+              child: Visibility(
+                visible: songId==null?false:true,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'RECENTLY PLAYED',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    TextButton(
+                      onPressed: () {
+                        getRecentlyPlayedSongs().then((value) => addResentSongs()).then((value) => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SeeAllSongs())));
+
+                      },
+                      child: Text(
+                        'See All',
+                        style: TextStyle(
+                            color: Colors.lightBlue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            Container(
-              height: 210,
-              child: ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) => recentSongCard(recentSongs![index]),
-                  itemCount: recentSongs?.length),
+            Visibility(
+              visible: songId==null?false:true,
+              child: Container(
+                height: 210,
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) => recentSongCard(recentSongs![index]),
+                    itemCount: recentSongs?.length),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 15, bottom: 15, left: 15),
