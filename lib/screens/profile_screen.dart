@@ -438,7 +438,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
                                             5))),
-                                onPressed: () {
+                                onPressed: () async {
+                                  SharedPreferences preferences = await SharedPreferences.getInstance();
+                                  preferences.setString("phone", phoneController.text);
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(

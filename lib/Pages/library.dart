@@ -284,6 +284,10 @@ class _LibraryPageState extends State<LibraryPage> {
                     builder: (context) => SongsPlayer(
                           songImg: item.image800,
                           songTitle: item.songName,
+                          songUrl: item.songUrl,
+                          songSubtitle: item.artistName,
+                          songToken: item.token,
+
                         ));
                 // if(_isPlaying = true){
                 //   widget._miniPlayer?.call(SongsPlayer(songTitle: item.resentSongTitle,songImg: item.recentImg,));}
@@ -331,6 +335,8 @@ class _LibraryPageState extends State<LibraryPage> {
                   songImg: item.image800.toString(),
                   songTitle: item.songName,
                   songSubtitle: item.artistName,
+                  songUrl: item.songUrl,
+                  songToken: item.token,
                 ),),).then((val) => val == true ? reloadData() : null);
 
           },

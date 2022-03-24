@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class RadioBottomSheet extends StatefulWidget {
   String? radioTitle;
   String? radioImg;
   String? radioSubtitle;
+  String? radioLink;
+
   RadioBottomSheet(
-      {Key? key, this.radioTitle, this.radioImg, this.radioSubtitle})
+      {Key? key,
+      this.radioTitle,
+      this.radioImg,
+      this.radioSubtitle,
+      this.radioLink})
       : super(key: key);
 
   @override
@@ -13,8 +20,28 @@ class RadioBottomSheet extends StatefulWidget {
 }
 
 class _RadioBottomSheetState extends State<RadioBottomSheet> {
-
   bool isVisible = false;
+  var audio = AudioPlayer();
+  bool _isPaused = false;
+  bool _isPlaying = false;
+
+  Future play() async {
+    int result = await audio.play(widget.radioLink.toString());
+    if (result == 1) {
+      setState(() {
+        _isPlaying = true;
+      });
+    }
+  }
+
+  Future pause() async {
+    int result = await audio.pause();
+    if (result == 1) {
+      setState(() {
+        _isPlaying = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,39 +158,21 @@ class _RadioBottomSheetState extends State<RadioBottomSheet> {
                               Padding(
                                 padding:
                                     const EdgeInsets.only(right: 25, left: 25),
-                                child: Stack(
-                                    children: [
-                                      Visibility(
-                                        visible: !isVisible,
-                                        child: IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              isVisible = !isVisible;
-                                            });
-                                          },
-                                          icon: Icon(
-                                            Icons.play_circle_outline,
-                                            size: 50,
-                                            color: Colors.white,
-                                          ),
+                                child: IconButton(
+                                  icon: (_isPlaying)
+                                      ? Icon(
+                                          Icons.pause_circle_outline,
+                                          size: 50,
+                                          color: Colors.white,
+                                        )
+                                      : Icon(
+                                          Icons.play_circle_outline,
+                                          size: 50,
+                                          color: Colors.white,
                                         ),
-                                      ),
-                                      Visibility(
-                                        visible: isVisible,
-                                        child: IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              isVisible = !isVisible;
-                                            });
-                                          },
-                                          icon: Icon(
-                                            Icons.pause_circle_outline,
-                                            size: 50,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ]),
+                                  onPressed: () =>
+                                      _isPlaying ? pause() : play(),
+                                ),
                               ),
                               IconButton(
                                   onPressed: () {},

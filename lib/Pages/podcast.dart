@@ -302,6 +302,7 @@ podcastFeaturedListCard(FeaturedPodcasts item, BuildContext context) {
                         songImg: item.profileimageUrl,
                         songTitle: item.name,
                         songSubtitle: item.shortDescription,
+                        songUrl: item.audioUrl,
                       ));
             },
             child: SizedBox(
@@ -360,6 +361,7 @@ podcastTrendingListCard(TrandingPodcasts item, BuildContext context) {
                         songImg: item.profileimageUrl,
                         songTitle: item.name,
                         songSubtitle: item.shortDescription,
+                        songUrl: item.audioUrl,
                       ));
             },
             child: SizedBox(

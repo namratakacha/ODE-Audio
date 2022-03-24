@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:music_player/models/library_model.dart';
-
+import 'package:music_player/models/song_token_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 
 
@@ -12,8 +16,10 @@ class SongsPlayer extends StatefulWidget {
   String? songImg;
   String? songSubtitle;
   Function? miniPlayer2;
+  String? songUrl;
+  String? songToken;
 
-  SongsPlayer({Key? key, this.songTitle, this.songImg, this.songSubtitle, this.miniPlayer2})
+  SongsPlayer({Key? key, this.songTitle, this.songImg, this.songSubtitle, this.miniPlayer2, this.songUrl, this.songToken})
       : super(key: key);
 
   @override
@@ -28,11 +34,46 @@ class _SongsPlayerState extends State<SongsPlayer> {
   var audio = AudioPlayer();
   Duration _duration = Duration();
   Duration _position = Duration();
+  String? songsToken;
+  AudioCache audioCache = AudioCache();
+
+
+  Future getSongToken() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String token = preferences.getString("token") ?? "";
+
+    var url = Uri.parse(
+        'https://php71.indianic.com/odemusicapp/public/api/v1/getsongtoken');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+    if (response.statusCode == 200) {
+      print(response.body);
+
+      var songToken =
+          SongTokenModel.fromJson(json.decode(response.body)).data?.token;
+      print(songToken);
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      preferences.setString("stoken", songToken??'');
+
+      setState(() {});
+    } else {
+      print(response.statusCode);
+      print('No data');
+    }
+  }
+
 
 
   Future play() async {
+   //  SharedPreferences preferences = await SharedPreferences.getInstance();
+   //  songsToken = preferences.getString('stoken');
+   // print(songsToken);
+   //  audio.setUrl(widget.songUrl.toString());
     int result = await audio.play(
-        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3');
+        'https://thegrowingdeveloper.org/files/audios/quiet-time.mp3?b4869097e4');
     if (result == 1) {
       setState(() {
         _isPlaying = true;
@@ -58,14 +99,17 @@ class _SongsPlayerState extends State<SongsPlayer> {
     }
   }
 
-  void changeToSecond(int second){
+  Future<void> changeToSecond(int second) async {
+    // final uri = await audioCache.load(widget.songUrl.toString());
+    // await audio.setUrl(uri.toString());
+    // audio.setUrl(widget.songUrl.toString());
     Duration newDuration = Duration(seconds: second);
     this.audio.seek(newDuration);
   }
 
   @override
   void initState() {
-    // TODO: implement initState
+   // getSongToken();
     super.initState();
     this.audio.onDurationChanged.listen((Duration d) {
 
@@ -75,7 +119,7 @@ class _SongsPlayerState extends State<SongsPlayer> {
 
       setState(() => _position = p);
     });
-    this.audio.onPlayerCompletion.listen((event){
+        this.audio.onPlayerCompletion.listen((event){
       setState(() {
         _position = Duration(seconds: 0);
         _isPlaying = false;
@@ -289,89 +333,122 @@ class _SongsPlayerState extends State<SongsPlayer> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Stack(
-                      alignment: Alignment.centerRight,
+                  Container(
+                    height: 170,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                                onPressed: () async{
-                                 await audio.seek(Duration(seconds: _position.inSeconds - 15));
-                                },
-                                icon: Icon(
-                                  Icons.fast_rewind,
-                                  size: 50,
-                                  color: Colors.white,
-                                )),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(right: 25, left: 25),
-                              child: IconButton(
-                                icon: (_isPlaying)
-                                    ? Icon(
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Stack(
+                            alignment: Alignment.centerRight,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  IconButton(
+                                      onPressed: () async{
+                                        await audio.seek(Duration(seconds: _position.inSeconds - 15));
+                                      },
+                                      icon: Icon(
+                                        Icons.fast_rewind,
+                                        size: 50,
+                                        color: Colors.white,
+                                      )),
+                                  Padding(
+                                    padding:
+                                    const EdgeInsets.only(right: 25, left: 25),
+                                    child: IconButton(
+                                      icon: (_isPlaying)
+                                          ? Icon(
                                         Icons.pause_circle_outline,
                                         size: 50,
                                         color: Colors.white,
                                       )
-                                    : Icon(
+                                          : Icon(
                                         Icons.play_circle_outline,
                                         size: 50,
                                         color: Colors.white,
                                       ),
-                                onPressed: () => _isPlaying
-                                    ? pause()
-                                    : _isPaused
-                                        ? resume()
-                                        : play(),
-                              ),
-                            ),
+                                      onPressed: () =>  _isPlaying
+                                          ? pause()
+                                          : _isPaused
+                                          ? resume()
+                                          : play(),
 
-                            IconButton(
-                                onPressed: () async{
-                                  await audio.seek(Duration(seconds: _position.inSeconds + 15));
-                                },
-                                icon: Icon(
-                                  Icons.fast_forward,
-                                  size: 50,
-                                  color: Colors.white,
-                                )),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 15, right: 8),
-                          child: Stack(
-                            children: [
-                              Visibility(
-                                visible: !isMuted,
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      audio.setVolume(0.0);
-                                      isMuted = !isMuted;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.volume_up_rounded,
-                                    color: Colors.white,
+                                    ),
                                   ),
+
+                                  IconButton(
+                                      onPressed: () async{
+                                        await audio.seek(Duration(seconds: _position.inSeconds + 15));
+                                      },
+                                      icon: Icon(
+                                        Icons.fast_forward,
+                                        size: 50,
+                                        color: Colors.white,
+                                      )),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 15, right: 8),
+                                child: Stack(
+                                  children: [
+                                    Visibility(
+                                      visible: !isMuted,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            audio.setVolume(0.0);
+                                            isMuted = !isMuted;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.volume_up_rounded,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    Visibility(
+                                      visible: isMuted,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            audio.setVolume(1.0);
+                                            isMuted = !isMuted;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          Icons.volume_off_rounded,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Visibility(
-                                visible: isMuted,
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      audio.setVolume(1.0);
-                                      isMuted = !isMuted;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    Icons.volume_off_rounded,
-                                    color: Colors.white,
-                                  ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 20),
+                          child: Column(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  AppSettings.openBluetoothSettings();
+                                },
+                                icon: Icon(
+                                  Icons.wifi_tethering,
+                                  color: Colors.grey.shade900,
+                                  size: 30,
+                                ),
+                              ),
+                              Text(
+                                'Devices Available',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade900,
                                 ),
                               ),
                             ],
@@ -379,31 +456,9 @@ class _SongsPlayerState extends State<SongsPlayer> {
                         ),
                       ],
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 50, left: 20),
-                    child: Column(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            AppSettings.openBluetoothSettings();
-                          },
-                          icon: Icon(
-                            Icons.wifi_tethering,
-                            color: Colors.grey.shade900,
-                            size: 30,
-                          ),
-                        ),
-                        Text(
-                          'Devices Available',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade900,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  )
+
+
                 ],
               ),
             ),

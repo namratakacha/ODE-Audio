@@ -31,6 +31,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
   String? email;
   String? phone;
   String? img;
+  String? phoneNo;
   final user = FirebaseAuth.instance.currentUser;
 
 
@@ -38,6 +39,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
   @override
   void initState()  {
       loadUserData();
+      userPhoneNumber();
     super.initState();
   }
 
@@ -51,6 +53,13 @@ class _MyAccountPageState extends State<MyAccountPage> {
       phone = prefs.getString('phone_number');
       print(phone);
       img = prefs.getString('profileimage_url');
+    });
+  }
+
+  userPhoneNumber()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      phoneNo = prefs.getString('phone');
     });
   }
 
@@ -173,7 +182,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                                             email: email ?? widget.email ??
                                                 user?.email ??
                                                 '',
-                                            phone: phone ?? widget.phone ??
+                                            phone: phone ?? phoneNo ?? widget.phone ??
                                                 user?.phoneNumber ??
                                                 '',
                                             img: img ?? widget.img ??
@@ -207,7 +216,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                 textAlign: TextAlign.center,
               ),
               Text(
-                phone??
+                phone?? phoneNo ??
                     widget.phone ?? '',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,

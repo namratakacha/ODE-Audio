@@ -279,6 +279,7 @@ radioListCard(RadioList item, BuildContext context) {
                   radioImg: item.profileimageUrl,
                   radioTitle: item.name,
                   radioSubtitle: item.shortDescription,
+                  radioLink: item.link,
                 ));
       },
       child: Container(
