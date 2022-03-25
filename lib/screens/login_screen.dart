@@ -96,15 +96,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         SizedBox(width: 8),
-                        Expanded(
-                          child: Text('Or Continue With',
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey,
-                                  decoration: TextDecoration.none,
-                                  letterSpacing: 0,
-                                  wordSpacing: 0)),
-                        ),
+                        Text('Or Continue With',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                                decoration: TextDecoration.none,
+                                letterSpacing: 0,
+                                wordSpacing: 0)),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Divider(
                             color: Colors.grey,
